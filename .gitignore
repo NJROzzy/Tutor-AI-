@@ -1,0 +1,109 @@
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environment
+venv/
+ENV/
+env/
+venv.bak/
+
+# Django database
+*.sqlite3
+media/
+
+# Logs
+*.log
+
+# Local env files
+.env
+.env.*
+
+# Editor directories and files
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+ehthumbs.db
+
+# Keep migrations tracked unless you intentionally want to ignore them
+# If you want to ignore per-developer migrations, add a pattern like:
+# */migrations/*.py
+# !*/migrations/__init__.py
+
+# Ignore SQLite database
+*.sqlite3
+
+# Ignore environment variables and sensitive settings
+.env
+local_settings.py
+
+# Ignore Python bytecode and cache files
+__pycache__/
+*.pyc
+*.pyd
+*.pyo
+migrations/**/__pycache__/
+
+# Ignore virtual environments
+venv/
+env/
+
+# Ignore media and static files (if managed separately or generated)
+media/
+static/
+
+# Ignore logs and backups
+*.log
+*.bak
+*.swp
+
+# Ignore VS Code specific files and folders
+.vscode/
+
+# Ignore common IDE and editor settings (if applicable)
+.idea/  # For PyCharm or IntelliJ IDEA
+*.sublime-project
+*.sublime-workspace
+
+# Ignore build artifacts and distribution files
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Ignore test and coverage reports
+.tox/
+.coverage
+htmlcov/
+.pytest_cache/
+
+# Ignore deployment-related files
+*.tar.gz
+*.zip
