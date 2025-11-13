@@ -1,0 +1,56 @@
+[
+{
+  "model": "core.customuser",
+  "fields": {
+    "password": "pbkdf2_sha256$1000000$0gbF9xxcULeV3TnFoOD4M4$BCfS0eR9mVytC5aC7jkhOGXIAix3npNVNr4PBHkLcfg=",
+    "last_login": null,
+    "username": "abc",
+    "email": "rafi.mohamedk@gmail.com",
+    "first_name": "Mohamed",
+    "last_name": "Kalil",
+    "phone_number": "000",
+    "is_active": true,
+    "parent": false,
+    "kid": false,
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "core.customuser",
+  "fields": {
+    "password": "pbkdf2_sha256$1000000$klRznWg999v8jpXW041a3i$K5+YU8zvGphyWDWxfjBcdxmwYPgxCiplV/V0+ZCHXBo=",
+    "last_login": null,
+    "username": "abc123",
+    "email": "raf@gmail.com",
+    "first_name": "Rafi",
+    "last_name": "Kalil",
+    "phone_number": "12345",
+    "is_active": true,
+    "parent": false,
+    "kid": false,
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "authtoken.token",
+  "pk": "26e9056a0ded7992eab509e7eac2eb1941a3acf5",
+  "fields": {
+    "user": [
+      "abc123"
+    ],
+    "created": "2025-10-15T15:15:39.886Z"
+  }
+},
+{
+  "model": "authtoken.token",
+  "pk": "6ff2b2e7f01b202c1d6f05ab11f1e10ea60d31b6",
+  "fields": {
+    "user": [
+      "abc"
+    ],
+    "created": "2025-10-14T19:27:05.857Z"
+  }
+}
+]
