@@ -5,6 +5,8 @@ import 'pages/login_page.dart';
 import 'pages/signup_page.dart';
 import 'pages/home_page.dart';
 import 'main.dart' show StartScreen;
+import 'pages/kid_subject_page.dart';
+import 'pages/tutor_chat_page.dart';
 
 // --- Parent Onboarding Flow ---
 import 'pages/parent/parent_onboarding_page.dart';
@@ -43,6 +45,24 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/signup',
       builder: (_, __) => const SignUpParentPage(),
+    ),
+
+    // --- Kid + Llama Flow ---
+    GoRoute(
+      path: '/parent/profiles',
+      builder: (context, state) => const ParentProfilesPage(),
+    ),
+    GoRoute(
+      path: '/kid/subject',
+      builder: (context, state) => const KidSubjectPage(),
+    ),
+    GoRoute(
+      path: '/kid/chat/:subject',
+      builder: (context, state) {
+        final subject =
+            state.pathParameters['subject']?.toLowerCase() ?? 'math';
+        return TutorChatPage(subject: subject);
+      },
     ),
 
     // --- Main Home ---
@@ -102,8 +122,5 @@ final appRouter = GoRouter(
       path: '/parent/progress',
       builder: (_, __) => const ProgressPage(),
     ),
-    GoRoute(
-        path: '/parent/profiles',
-        builder: (_, __) => const ParentProfilesPage()),
   ],
 );

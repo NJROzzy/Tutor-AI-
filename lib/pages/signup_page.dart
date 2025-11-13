@@ -4,6 +4,7 @@ import '../services/auth_service.dart';
 
 class SignUpParentPage extends StatefulWidget {
   const SignUpParentPage({super.key});
+
   @override
   State<SignUpParentPage> createState() => _SignUpParentPageState();
 }
@@ -14,7 +15,10 @@ class _SignUpParentPageState extends State<SignUpParentPage> {
   final _email = TextEditingController();
   final _pw = TextEditingController();
   final _confirm = TextEditingController();
-  bool _obscure1 = true, _obscure2 = true, _loading = false;
+
+  bool _obscure1 = true;
+  bool _obscure2 = true;
+  bool _loading = false;
   String? _error;
 
   @override
@@ -27,11 +31,13 @@ class _SignUpParentPageState extends State<SignUpParentPage> {
   }
 
   Future<void> _create() async {
-    if (!_formKey.currentState!.validate()) return;
+    if (!(_formKey.currentState?.validate() ?? false)) return;
+
     if (_pw.text != _confirm.text) {
       setState(() => _error = 'Passwords do not match');
       return;
     }
+
     setState(() {
       _loading = true;
       _error = null;
@@ -43,19 +49,23 @@ class _SignUpParentPageState extends State<SignUpParentPage> {
         email: _email.text.trim(),
         password: _pw.text,
       );
+
       if (!mounted) return;
 
-      // Optional: a brief success toast/snackbar
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Account created. Please sign in.')),
       );
 
-      // ✅ GoRouter navigation (no Navigator lock issues)
+      // Go to login after successful signup
       context.go('/login');
     } on AuthException catch (e) {
       setState(() => _error = e.message);
+    } catch (e) {
+      setState(() => _error = 'Something went wrong: $e');
     } finally {
-      if (mounted) setState(() => _loading = false);
+      if (mounted) {
+        setState(() => _loading = false);
+      }
     }
   }
 
@@ -71,14 +81,21 @@ class _SignUpParentPageState extends State<SignUpParentPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Text('Tutor AI',
-                      textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.headlineLarge),
+                  // ---------- Header ----------
+                  Text(
+                    'Tutor AI',
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.headlineLarge,
+                  ),
                   const SizedBox(height: 8),
-                  const Text('Create parent account',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.white70)),
+                  const Text(
+                    'Create parent account',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: Colors.white70),
+                  ),
                   const SizedBox(height: 24),
+
+                  // ---------- Error banner ----------
                   if (_error != null) ...[
                     Container(
                       padding: const EdgeInsets.all(12),
@@ -97,6 +114,8 @@ class _SignUpParentPageState extends State<SignUpParentPage> {
                     ),
                     const SizedBox(height: 12),
                   ],
+
+                  // ---------- Form ----------
                   Form(
                     key: _formKey,
                     child: Column(
@@ -117,8 +136,9 @@ class _SignUpParentPageState extends State<SignUpParentPage> {
                           controller: _email,
                           keyboardType: TextInputType.emailAddress,
                           validator: (v) {
-                            if (v == null || v.isEmpty)
+                            if (v == null || v.isEmpty) {
                               return 'Email is required';
+                            }
                             final ok = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$')
                                 .hasMatch(v);
                             return ok ? null : 'Enter a valid email';
@@ -141,9 +161,11 @@ class _SignUpParentPageState extends State<SignUpParentPage> {
                             suffixIcon: IconButton(
                               onPressed: () =>
                                   setState(() => _obscure1 = !_obscure1),
-                              icon: Icon(_obscure1
-                                  ? Icons.visibility_outlined
-                                  : Icons.visibility_off_outlined),
+                              icon: Icon(
+                                _obscure1
+                                    ? Icons.visibility_outlined
+                                    : Icons.visibility_off_outlined,
+                              ),
                             ),
                           ),
                         ),
@@ -160,16 +182,18 @@ class _SignUpParentPageState extends State<SignUpParentPage> {
                             suffixIcon: IconButton(
                               onPressed: () =>
                                   setState(() => _obscure2 = !_obscure2),
-                              icon: Icon(_obscure2
-                                  ? Icons.visibility_outlined
-                                  : Icons.visibility_off_outlined),
+                              icon: Icon(
+                                _obscure2
+                                    ? Icons.visibility_outlined
+                                    : Icons.visibility_off_outlined,
+                              ),
                             ),
                           ),
                         ),
                         const SizedBox(height: 16),
                         _loading
                             ? const Center(child: CircularProgressIndicator())
-                            : ElevatedButton(
+                            : FilledButton(
                                 onPressed: _create,
                                 child: const Text('Create account'),
                               ),

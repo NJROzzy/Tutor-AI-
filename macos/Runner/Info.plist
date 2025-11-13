@@ -28,12 +28,18 @@
 	<string>MainMenu</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>We use the microphone for voice input.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Monty / Tutor AI uses the microphone for speech input.</string>
 
 	<!-- ✅ Allow HTTP (non-HTTPS) connections to localhost -->
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsArbitraryLoads</key>
 		<true/>
+		<key>NSMicrophoneUsageDescription</key>
+		<string>This app requires access to the microphone for speech recognition.</string>
 		<key>NSExceptionDomains</key>
 		<dict>
 			<key>localhost</key>

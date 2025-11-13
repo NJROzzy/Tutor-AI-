@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../services/auth_service.dart' show authService, ChildProfile;
@@ -50,6 +49,7 @@ class _ParentProfilesPageState extends State<ParentProfilesPage> {
     if (result == null) return;
 
     try {
+      // NOTE: AuthService.createChild expects `grade`, not `gradeLevel`
       final created = await authService.createChild(
         name: result['name'] as String,
         age: result['age'] as int,
@@ -57,6 +57,7 @@ class _ParentProfilesPageState extends State<ParentProfilesPage> {
         grade: result['grade'] as String,
       );
       setState(() => _children = [..._children, created]);
+
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Child profile added')),
@@ -70,9 +71,11 @@ class _ParentProfilesPageState extends State<ParentProfilesPage> {
   }
 
   void _selectChild(ChildProfile c) {
-    // You can store selected child in-memory or via authService if needed.
-    // For now just navigate to home.
-    context.go('/home');
+    // remember which child is active
+    authService.selectChild(c);
+
+    // Go to subject selection (math / english)
+    context.go('/kid/subject');
   }
 
   @override
@@ -105,10 +108,11 @@ class _ParentProfilesPageState extends State<ParentProfilesPage> {
                               const Icon(Icons.child_care, size: 64),
                               const SizedBox(height: 16),
                               const Center(
-                                  child: Text(
-                                'No profiles yet',
-                                style: TextStyle(fontSize: 18),
-                              )),
+                                child: Text(
+                                  'No profiles yet',
+                                  style: TextStyle(fontSize: 18),
+                                ),
+                              ),
                               const SizedBox(height: 12),
                               Center(
                                 child: FilledButton.icon(
@@ -134,7 +138,8 @@ class _ParentProfilesPageState extends State<ParentProfilesPage> {
                                 final c = _children[i];
                                 return _ChildTile(
                                   name: c.name,
-                                  subtitle: '${c.grade} • ${c.age} yrs',
+                                  // ChildProfile from auth_service has `gradeLevel`
+                                  subtitle: '${c.gradeLevel} • ${c.age} yrs',
                                   onTap: () => _selectChild(c),
                                 );
                               },
@@ -216,15 +221,16 @@ class _AddChildSheetState extends State<_AddChildSheet> {
     super.dispose();
   }
 
-  void _save() async {
+  void _save() {
     if (!(_form.currentState?.validate() ?? false)) return;
     setState(() => _saving = true);
+
     // Return the form data to the parent page
     Navigator.of(context).pop({
       'name': _name.text.trim(),
       'age': int.tryParse(_age.text.trim()) ?? 0,
       'gender': _gender,
-      'grade': _grade,
+      'grade': _grade, // <-- key is `grade` (matches _openAddChildSheet)
     });
   }
 
@@ -252,8 +258,10 @@ class _AddChildSheetState extends State<_AddChildSheet> {
                 borderRadius: BorderRadius.circular(4),
               ),
             ),
-            const Text('Add Child',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
+            const Text(
+              'Add Child',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+            ),
             const SizedBox(height: 12),
             TextFormField(
               controller: _name,
@@ -323,7 +331,8 @@ class _AddChildSheetState extends State<_AddChildSheet> {
                     ? const SizedBox(
                         height: 18,
                         width: 18,
-                        child: CircularProgressIndicator(strokeWidth: 2))
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
                     : const Text('Save'),
               ),
             ),

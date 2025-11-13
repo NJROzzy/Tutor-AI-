@@ -1,19 +1,7 @@
 import 'package:flutter/foundation.dart';
+import 'auth_service.dart' show ChildProfile;
 
-class ChildProfile {
-  final String name;
-  final int age;
-  final String gender; // "Male" | "Female" | "Other"
-  final String grade; // e.g., "K", "1", "2", ...
-
-  const ChildProfile({
-    required this.name,
-    required this.age,
-    required this.gender,
-    required this.grade,
-  });
-}
-
+/// Store for child profiles that the UI can read from.
 class ChildStore extends ChangeNotifier {
   final List<ChildProfile> _children = [];
   ChildProfile? _selected;
@@ -21,16 +9,31 @@ class ChildStore extends ChangeNotifier {
   List<ChildProfile> get children => List.unmodifiable(_children);
   ChildProfile? get selected => _selected;
 
+  /// Replace all children with a fresh list from the backend.
+  void setChildren(List<ChildProfile> newChildren) {
+    _children
+      ..clear()
+      ..addAll(newChildren);
+
+    // Optional: auto-select the first child if any
+    _selected = _children.isNotEmpty ? _children.first : null;
+
+    notifyListeners();
+  }
+
+  /// Add a single child (e.g. after creating one).
   void addChild(ChildProfile c) {
     _children.add(c);
     notifyListeners();
   }
 
+  /// Let the UI mark which child is active.
   void select(ChildProfile c) {
     _selected = c;
     notifyListeners();
   }
 
+  /// Clear everything (e.g. on logout).
   void clear() {
     _children.clear();
     _selected = null;
@@ -38,5 +41,5 @@ class ChildStore extends ChangeNotifier {
   }
 }
 
-// Simple global for now (you can swap to Provider later)
+/// Simple global instance for now.
 final childStore = ChildStore();

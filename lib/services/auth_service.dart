@@ -23,14 +23,14 @@ class ChildProfile {
   final String name;
   final int age;
   final String gender;
-  final String grade;
+  final String gradeLevel; // <- use gradeLevel everywhere
 
   const ChildProfile({
     required this.id,
     required this.name,
     required this.age,
     required this.gender,
-    required this.grade,
+    required this.gradeLevel,
   });
 
   factory ChildProfile.fromJson(Map<String, dynamic> j) => ChildProfile(
@@ -40,7 +40,7 @@ class ChildProfile {
             ? j['age'] as int
             : int.tryParse('${j['age']}') ?? 0,
         gender: (j['gender'] ?? '').toString(),
-        grade: (j['grade'] ?? '').toString(),
+        gradeLevel: (j['grade_level'] ?? '').toString(),
       );
 
   Map<String, dynamic> toJson() => {
@@ -48,7 +48,7 @@ class ChildProfile {
         'name': name,
         'age': age,
         'gender': gender,
-        'grade': grade,
+        'grade_level': gradeLevel,
       };
 }
 
@@ -144,12 +144,12 @@ class AuthService {
   }
 
   // ===== CHILD PROFILES =====
-  // Assumes DRF endpoints:
-  //   GET  /api/children/      -> 200 OK  [{id,name,age,gender,grade}, ...]
-  //   POST /api/children/      -> 201 Created {id,name,age,gender,grade}
+  // Backend endpoints (because of path('api/auth/', include('core.urls'))):
+  //   GET  /api/auth/children/
+  //   POST /api/auth/children/
 
   Future<List<ChildProfile>> fetchChildren() async {
-    final uri = Uri.parse('${_base}children/');
+    final uri = Uri.parse('${_base}auth/children/'); // 👈 updated
     final res = await http.get(uri, headers: authHeaders());
 
     if (res.statusCode != 200) {
@@ -180,7 +180,7 @@ class AuthService {
     required String gender,
     required String grade,
   }) async {
-    final uri = Uri.parse('${_base}children/');
+    final uri = Uri.parse('${_base}auth/children/'); // 👈 updated
     final res = await http.post(
       uri,
       headers: authHeaders(),
@@ -201,6 +201,39 @@ class AuthService {
 
     final body = jsonDecode(res.body) as Map<String, dynamic>;
     return ChildProfile.fromJson(body);
+  }
+
+  Future<String> tutorChat({
+    required int childId,
+    required String subject, // "math" or "english"
+    required String message,
+  }) async {
+    final uri = Uri.parse('${_base}auth/tutor/chat/');
+    final res = await http.post(
+      uri,
+      headers: authHeaders(),
+      body: jsonEncode({
+        'child_id': childId,
+        'subject': subject,
+        'message': message,
+      }),
+    );
+
+    if (res.statusCode == 200) {
+      final body = jsonDecode(res.body) as Map<String, dynamic>;
+      final reply = body['reply']?.toString();
+      if (reply == null || reply.isEmpty) {
+        throw ChildApiException('Empty reply from tutor.');
+      }
+      return reply;
+    }
+
+    throw ChildApiException(
+      _extractErrorMessage(
+        res,
+        fallback: 'Tutor chat failed (${res.statusCode})',
+      ),
+    );
   }
 
   /// Optional helper to remember which child is active in the current session.

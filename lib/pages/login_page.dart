@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../services/auth_service.dart';
+import '../services/child_store.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -13,6 +14,7 @@ class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
   final _email = TextEditingController();
   final _pw = TextEditingController();
+
   bool _obscure = true;
   bool _loading = false;
   String? _error;
@@ -25,7 +27,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Future<void> _signIn() async {
-    if (!_formKey.currentState!.validate()) return;
+    if (!(_formKey.currentState?.validate() ?? false)) return;
 
     setState(() {
       _loading = true;
@@ -33,17 +35,35 @@ class _LoginPageState extends State<LoginPage> {
     });
 
     try {
+      // 1) Login – store token in authService
       await authService.signIn(
         email: _email.text.trim(),
         password: _pw.text,
       );
 
+      // 2) Load child profiles for this parent
+      final apiKids = await authService.fetchChildren();
+
+      // 3) Store them in our local childStore
+      childStore.setChildren(apiKids);
+
       if (!mounted) return;
 
-      // ✅ Navigate to HomePage after successful login
-      context.go('/parent/onboarding');
+      // 4) Decide where to go:
+      if (apiKids.isEmpty) {
+        // No child yet -> go to create child flow
+        // use the route that shows your "Create child profile" UI
+        context.go('/parent/add-child'); // or '/parent/onboarding'
+      } else {
+        // Already has children -> go to "Who's learning?" screen
+        // (optional) pre-select the first child for this session
+        childStore.select(apiKids.first);
+        context.go('/parent/select-child');
+      }
     } on AuthException catch (e) {
       setState(() => _error = e.message);
+    } catch (e) {
+      setState(() => _error = 'Something went wrong: $e');
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -62,7 +82,7 @@ class _LoginPageState extends State<LoginPage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // --- Header ---
+                  // ---------- Header ----------
                   Text(
                     'Tutor AI',
                     textAlign: TextAlign.center,
@@ -76,7 +96,7 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                   const SizedBox(height: 24),
 
-                  // --- Error Message ---
+                  // ---------- Error banner ----------
                   if (_error != null) ...[
                     Container(
                       padding: const EdgeInsets.all(12),
@@ -96,12 +116,12 @@ class _LoginPageState extends State<LoginPage> {
                     const SizedBox(height: 12),
                   ],
 
-                  // --- Form ---
+                  // ---------- Form ----------
                   Form(
                     key: _formKey,
                     child: Column(
                       children: [
-                        // Email field
+                        // Email
                         TextFormField(
                           controller: _email,
                           validator: (v) => (v == null || v.isEmpty)
@@ -119,7 +139,7 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                         const SizedBox(height: 12),
 
-                        // Password field
+                        // Password
                         TextFormField(
                           controller: _pw,
                           validator: (v) => (v == null || v.length < 8)
@@ -143,16 +163,16 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                         const SizedBox(height: 16),
 
-                        // Sign-in button
+                        // Sign in button
                         _loading
                             ? const Center(child: CircularProgressIndicator())
-                            : ElevatedButton(
+                            : FilledButton(
                                 onPressed: _signIn,
                                 child: const Text('Sign in'),
                               ),
                         const SizedBox(height: 12),
 
-                        // Create account link
+                        // Go to signup
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
@@ -165,7 +185,7 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                       ],
                     ),
-                  ),
+                  )
                 ],
               ),
             ),
