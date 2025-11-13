@@ -1,15 +1,13 @@
 from rest_framework import serializers
 from .models import CustomUser, ChildProfile
 
-
 class ChildProfileSerializer(serializers.ModelSerializer):
+    # Expose this field as "grade" in the API, but map to "grade_level" in the model
+    grade = serializers.CharField(source='grade_level')
+
     class Meta:
         model = ChildProfile
-        fields = [
-            'name', 'date_of_birth', 'grade_level', 'gender',
-            'learning_focus', 'lesson_style', 'session_duration',
-            'learning_goal', 'purpose'
-        ]
+        fields = ['id', 'name', 'age', 'gender', 'grade']
 
 
 class SignupSerializer(serializers.ModelSerializer):

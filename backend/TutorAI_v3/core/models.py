@@ -65,21 +65,15 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 
 
 class ChildProfile(models.Model):
-    parent = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='children')
+    parent = models.ForeignKey(
+        CustomUser,
+        on_delete=models.CASCADE,
+        related_name='children'
+    )
     name = models.CharField(max_length=100)
-    date_of_birth = models.DateField()
-    grade_level = models.CharField(max_length=20)
+    age = models.PositiveIntegerField()
     gender = models.CharField(max_length=10, blank=True, null=True)
-    learning_focus = models.CharField(max_length=10, choices=[('Math', 'Math'), ('English', 'English'), ('Both', 'Both')])
-    lesson_style = models.CharField(max_length=10, choices=[('Voice', 'Voice'), ('Mixed', 'Mixed')])
-    session_duration = models.IntegerField(choices=[(10, '10'), (15, '15'), (20, '20')])
-    learning_goal = models.TextField(blank=True, null=True)
-    purpose = models.CharField(max_length=100, choices=[
-        ('Match lessons to age and grade', 'Match lessons to age and grade'),
-        ('Choose tone and vocabulary', 'Choose tone and vocabulary'),
-        ('Create focused sessions', 'Create focused sessions'),
-        ('Personalize time and style', 'Personalize time and style'),
-    ])
+    grade_level = models.CharField(max_length=20)
 
     def __str__(self):
-        return f"{self.name} ({self.grade_level})"
+        return f"{self.name} (Grade {self.grade_level})"
