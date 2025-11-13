@@ -1,0 +1,102 @@
+<!-- <!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Signup</title>
+  </head>
+  <body>
+    <h1>Signup</h1>
+    <form id="signup-form">
+      <label>First name: <input name="first_name"/></label><br/>
+      <label>Last name: <input name="last_name"/></label><br/>
+      <label>Email: <input name="email"/></label><br/>
+      <label>Phone: <input name="phone_number"/></label><br/>
+      <label>Username: <input name="username"/></label><br/>
+      <label>Password: <input name="password" type="password"/></label><br/>
+      <button type="submit">Sign up</button>
+    </form>
+    <pre id="result"></pre>
+    <script>
+      document.getElementById('signup-form').addEventListener('submit', async (e)=>{
+        e.preventDefault();
+        const fd = new FormData(e.target);
+        const data = Object.fromEntries(fd.entries());
+        const res = await fetch('/api/auth/signup/', {method: 'POST', body: JSON.stringify(data), headers: {'Content-Type':'application/json'}});
+        const json = await res.json();
+        document.getElementById('result').textContent = JSON.stringify(json, null, 2);
+      });
+    </script>
+  </body>
+</html> -->
+
+<h2>Parent Sign-Up</h2>
+<form method="POST" action="/api/auth/signup/">
+  {% csrf_token %}
+  <label>Full Name:</label>
+  <input type="text" name="first_name" placeholder="First Name" required>
+  <input type="text" name="last_name" placeholder="Last Name" required><br>
+
+  <label>Email Address:</label>
+  <input type="email" name="email" required><br>
+
+  <label>Phone:</label>
+  <input type="text" name="phone_number"><br>
+
+  <label>Username:</label>
+  <input type="text" name="username" required><br>
+
+  <label>Password:</label>
+  <input type="password" name="password" required><br>
+
+  <label>Country:</label>
+  <input type="text" name="country"><br>
+
+  <label>Time Zone:</label>
+  <input type="text" name="timezone"><br>
+
+  <h3>Child Profile</h3>
+  <label>Child’s Name:</label>
+  <input type="text" name="children[0][name]" required><br>
+
+  <label>Date of Birth:</label>
+  <input type="date" name="children[0][date_of_birth]" required><br>
+
+  <label>Grade Level:</label>
+  <input type="text" name="children[0][grade_level]" required><br>
+
+  <label>Gender:</label>
+  <input type="text" name="children[0][gender]"><br>
+
+  <label>Learning Focus:</label>
+  <select name="children[0][learning_focus]">
+    <option value="Math">Math</option>
+    <option value="English">English</option>
+    <option value="Both">Both</option>
+  </select><br>
+
+  <label>Lesson Style:</label>
+  <select name="children[0][lesson_style]">
+    <option value="Voice">Voice</option>
+    <option value="Mixed">Mixed</option>
+  </select><br>
+
+  <label>Session Duration:</label>
+  <select name="children[0][session_duration]">
+    <option value="10">10</option>
+    <option value="15">15</option>
+    <option value="20">20</option>
+  </select><br>
+
+  <label>Learning Goal:</label>
+  <textarea name="children[0][learning_goal]"></textarea><br>
+
+  <label>Purpose:</label>
+  <select name="children[0][purpose]">
+    <option value="Match lessons to age and grade">Match lessons to age and grade</option>
+    <option value="Choose tone and vocabulary">Choose tone and vocabulary</option>
+    <option value="Create focused sessions">Create focused sessions</option>
+    <option value="Personalize time and style">Personalize time and style</option>
+  </select><br>
+
+  <button type="submit">Sign up</button>
+</form>
