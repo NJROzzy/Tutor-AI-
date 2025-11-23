@@ -23,4 +23,5 @@ urlpatterns = [
     path('api/auth/', include('core.urls')),
     # Redirect root URL to the signup UI
     path('', RedirectView.as_view(url='/api/auth/signup-ui/', permanent=False)),
+    path("api/learning/", include("learning.urls")),    
 ]
