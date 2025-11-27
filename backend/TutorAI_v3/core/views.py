@@ -18,9 +18,19 @@ import requests
 import io
 import numpy as np
 from scipy.io.wavfile import write as wav_write
+import tempfile
+import os
+import whisper 
+
+_WHISPER_MODEL = whisper.load_model("base")
 
 from TTS.api import TTS
 
+try:
+    import whisper
+    _WHISPER_MODEL = whisper.load_model("base")
+except Exception:
+    _WHISPER_MODEL = None
 
 # ---------- AUTH VIEWS ----------
 
@@ -197,7 +207,7 @@ def get_tts_engine():
     global _TTS_ENGINE
     if _TTS_ENGINE is None:
         _TTS_ENGINE = TTS(
-            model_name="tts_models/en/ljspeech/tacotron2-DDC",
+            model_name="tts_models/en/vctk/vits",
             progress_bar=False,
             gpu=False,  # CPU-only for now
         )
@@ -208,7 +218,7 @@ def get_tts_engine():
 class TutorTTSView(APIView):
     """
     POST /api/auth/tutor/tts/
-    Body: { "text": "...", "speaker": "...", "language": "..." }
+    Body: { "text": "...", "speaker": "p335" (optional) }
     Returns: raw WAV bytes (audio/wav).
     """
     permission_classes = [permissions.AllowAny]
@@ -221,16 +231,16 @@ class TutorTTSView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        speaker = request.data.get('speaker', None)
-        language = request.data.get('language', None)
+        # 👇 allow client to override, otherwise default to a "teacher" voice
+        speaker_id = request.data.get('speaker') or "p335"
 
         tts = get_tts_engine()
 
         # 1) synthesize to numpy array (float)
         wav = tts.tts(
             text=text,
-            speaker=speaker,
-            language=language,
+            speaker=speaker_id,
+            language=None,  # English default
         )
 
         # 2) get sample rate (or default)
@@ -239,13 +249,56 @@ class TutorTTSView(APIView):
         except Exception:
             sample_rate = 22050
 
-        # 3) encode WAV to bytes in-memory
+        # 3) encode WAV to bytes in-memory as 16-bit PCM
         buf = io.BytesIO()
-        wav_np = np.array(wav)
-        wav_write(buf, sample_rate, wav_np)
+        wav_np = np.array(wav, dtype=np.float32)
+
+        wav_clipped = np.clip(wav_np, -1.0, 1.0)
+        wav_int16 = (wav_clipped * 32767).astype(np.int16)
+
+        wav_write(buf, int(sample_rate), wav_int16)
         buf.seek(0)
 
         # 4) return as audio/wav
         resp = HttpResponse(buf.read(), content_type='audio/wav')
         resp['Content-Disposition'] = 'inline; filename="tutor_tts.wav"'
         return resp
+
+
+@method_decorator(csrf_exempt, name="dispatch")
+class TutorSTTView(APIView):
+    """
+    POST /api/auth/tutor/stt/
+    Body: raw audio bytes from the browser (audio/wav).
+    Returns: { "text": "transcribed text" }
+    """
+
+    permission_classes = []  # AllowAny
+
+    def post(self, request, *args, **kwargs):
+        audio_bytes = request.body
+        if not audio_bytes:
+            return Response(
+                {"detail": "No audio received"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Save bytes to a temporary .wav file
+        with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tmp:
+            tmp.write(audio_bytes)
+            tmp_path = tmp.name
+
+        try:
+            # Use Whisper to transcribe
+            result = _WHISPER_MODEL.transcribe(tmp_path, language="en")
+            text = (result.get("text") or "").strip()
+        finally:
+            try:
+                os.remove(tmp_path)
+            except OSError:
+                pass
+
+        if not text:
+            text = "(No words recognized)"
+
+        return Response({"text": text}, status=status.HTTP_200_OK)

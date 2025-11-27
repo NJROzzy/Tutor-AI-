@@ -7,6 +7,7 @@ from .views import (
     login_page,
     TutorChatView,
     TutorTTSView, 
+    TutorSTTView, 
 )
 
 urlpatterns = [
@@ -17,4 +18,5 @@ urlpatterns = [
     path('login-ui/', login_page, name='login_ui'),
     path('tutor/chat/', TutorChatView.as_view(), name='tutor_chat'),
     path('tutor/tts/', TutorTTSView.as_view(), name='tutor_tts'),
+    path("tutor/stt/", TutorSTTView.as_view(), name='tutor_stt'),
 ]
